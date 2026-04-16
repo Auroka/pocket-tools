@@ -105,27 +105,24 @@
           <section class="todo-board">
             <section class="todo-summary">
               <div class="todo-summary-head">
-                <div>
-                  <h2>待办概览</h2>
-                  <p>待处理事项排在前面，已完成事项自动沉到底部。</p>
-                </div>
+                <h2>待办概览</h2>
                 <span class="chip" id="todoCounter">0 条</span>
               </div>
 
               <div class="todo-metrics">
-                <article class="todo-metric">
+                <article class="todo-metric todo-metric-compact">
                   <span>待处理</span>
                   <strong class="mono-number" id="pendingCount">0</strong>
                 </article>
-                <article class="todo-metric">
+                <article class="todo-metric todo-metric-compact">
                   <span>已完成</span>
                   <strong class="mono-number" id="completedCount">0</strong>
                 </article>
-                <article class="todo-metric">
+                <article class="todo-metric todo-metric-compact">
                   <span>启用提醒</span>
                   <strong class="mono-number" id="reminderCount">0</strong>
                 </article>
-                <article class="todo-metric">
+                <article class="todo-metric todo-metric-wide">
                   <span>下次提醒</span>
                   <strong id="nextReminder">暂无</strong>
                 </article>
@@ -141,7 +138,7 @@
               <div class="todo-list-head">
                 <div>
                   <h2>待办列表</h2>
-                  <p>新增在左，处理在右，交互保持尽量直接。</p>
+                  <p class="todo-list-hint">右侧按钮可直接完成、恢复或删除待办。</p>
                 </div>
               </div>
 

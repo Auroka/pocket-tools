@@ -295,31 +295,31 @@
 
     todoList.innerHTML = sortedTodos
       .map(function (todo) {
-        const toggleLabel = todo.completed ? "已完成" : "待处理";
         const reminderChip = getReminderChipText(todo);
         const reminderNote = getReminderNote(todo);
         const titleClass = todo.completed ? "todo-title is-completed" : "todo-title";
         const toggleClass = todo.completed ? "todo-toggle is-completed" : "todo-toggle";
+        const toggleText = todo.completed ? "已完成" : "完成";
+        const toggleIcon = todo.completed ? "✓" : "○";
 
         return [
           '<article class="todo-item card">',
-          `  <button aria-label="${todo.completed ? "取消完成" : "标记完成"}" class="${toggleClass}" data-action="toggle" data-id="${todo.id}" type="button">`,
-          `    ${todo.completed ? "✓" : "○"}`,
-          "  </button>",
           '  <div class="todo-main">',
-          '    <div class="todo-headline">',
+          '    <div class="todo-content">',
           '      <div class="todo-title-wrap">',
           `        <h2 class="${titleClass}">${escapeHtml(todo.title)}</h2>`,
           "      </div>",
-          `      <button class="todo-delete" data-action="delete" data-id="${todo.id}" type="button">删除</button>`,
-          "    </div>",
           '    <div class="todo-meta">',
-          `      <span class="chip">${toggleLabel}</span>`,
           `      <span class="chip">${reminderChip}</span>`,
+          `      <p class="todo-note">${reminderNote}</p>`,
           "    </div>",
-          `    <p class="todo-note">${reminderNote}</p>`,
-          '    <div class="todo-actions">',
-          `      <button class="button button-secondary" data-action="toggle" data-id="${todo.id}" type="button">${todo.completed ? "恢复待办" : "完成待办"}</button>`,
+          "    </div>",
+          '    <div class="todo-item-actions">',
+          `      <button aria-label="${todo.completed ? "恢复待办" : "标记为完成"}" class="${toggleClass}" data-action="toggle" data-id="${todo.id}" type="button">`,
+          `        <span class="todo-toggle-icon">${toggleIcon}</span>`,
+          `        <span class="todo-toggle-text">${toggleText}</span>`,
+          "      </button>",
+          `      <button class="todo-delete" data-action="delete" data-id="${todo.id}" type="button">删除</button>`,
           "    </div>",
           "  </div>",
           "</article>"
