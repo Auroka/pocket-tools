@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>待办记录</title>
+    <meta name="theme-color" content="#f6f7fb" />
+    <link rel="stylesheet" href="../../src/styles/tokens.css" />
+    <link rel="stylesheet" href="../../src/styles/base.css" />
+    <link rel="stylesheet" href="../../src/styles/components.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="screen todo-page">
+        <header class="page-header todo-intro">
+          <div class="eyebrow">Todo Reminder</div>
+          <div class="header-row">
+            <div>
+              <h1 class="page-title">待办记录</h1>
+            </div>
+            <a class="page-link" href="../../index.html">返回首页</a>
+          </div>
+          <p class="page-subtitle">
+            左侧快速新增待办，右侧集中查看事项、完成状态和提醒节奏。桌面端双栏，移动端自动纵向排布。
+          </p>
+        </header>
+
+        <section class="todo-workspace">
+          <aside class="todo-panel">
+            <div class="todo-panel-header">
+              <span class="status-pill is-ready">新增待办</span>
+              <h2 class="todo-panel-title">先把事情写清楚，再决定要不要提醒</h2>
+              <p class="todo-panel-text">
+                待办数据保存在当前浏览器本地。提醒依赖通知权限，页面保持打开时会持续检查。
+              </p>
+            </div>
+
+            <form class="todo-form" id="todoForm">
+              <section class="todo-form-section">
+                <div class="field">
+                  <label for="todoTitle">待办事项</label>
+                  <input
+                    class="input"
+                    id="todoTitle"
+                    maxlength="80"
+                    placeholder="例如：14:30 前提交周报"
+                    required
+                    type="text"
+                  />
+                </div>
+
+              </section>
+
+              <section class="todo-form-section">
+                <div class="field">
+                  <label for="reminderType">提醒方式</label>
+                  <select class="input-select" id="reminderType">
+                    <option value="none">不提醒</option>
+                    <option value="interval">每隔多少分钟提醒</option>
+                    <option value="fixed">固定时间提醒</option>
+                  </select>
+                  <span class="field-caption">固定时间提醒只触发一次，间隔提醒会重复触发。</span>
+                </div>
+
+                <div class="reminder-fields" id="intervalField">
+                  <div class="field">
+                    <label for="intervalMinutes">间隔分钟</label>
+                    <input
+                      class="input"
+                      id="intervalMinutes"
+                      max="720"
+                      min="1"
+                      placeholder="例如：15"
+                      type="number"
+                    />
+                  </div>
+                </div>
+
+                <div class="reminder-fields" id="fixedField">
+                  <div class="field">
+                    <label for="fixedTime">固定提醒时间</label>
+                    <input class="input" id="fixedTime" type="datetime-local" />
+                  </div>
+                </div>
+              </section>
+
+              <section class="todo-form-section">
+                <div class="button-group">
+                  <button class="button button-primary" type="submit">新增待办</button>
+                  <button class="button button-secondary" id="resetFormButton" type="button">清空表单</button>
+                </div>
+              </section>
+            </form>
+
+            <section class="permission-panel" id="permissionPanel">
+              <span class="panel-label">通知状态</span>
+              <div class="stack-sm">
+                <strong id="permissionText">开启浏览器通知后，提醒会在到点时弹出系统通知。</strong>
+                <button class="button button-secondary" id="permissionButton" type="button">开启通知</button>
+              </div>
+            </section>
+          </aside>
+
+          <section class="todo-board">
+            <section class="todo-summary">
+              <div class="todo-summary-head">
+                <div>
+                  <h2>待办概览</h2>
+                  <p>待处理事项排在前面，已完成事项自动沉到底部。</p>
+                </div>
+                <span class="chip" id="todoCounter">0 条</span>
+              </div>
+
+              <div class="todo-metrics">
+                <article class="todo-metric">
+                  <span>待处理</span>
+                  <strong class="mono-number" id="pendingCount">0</strong>
+                </article>
+                <article class="todo-metric">
+                  <span>已完成</span>
+                  <strong class="mono-number" id="completedCount">0</strong>
+                </article>
+                <article class="todo-metric">
+                  <span>启用提醒</span>
+                  <strong class="mono-number" id="reminderCount">0</strong>
+                </article>
+                <article class="todo-metric">
+                  <span>下次提醒</span>
+                  <strong id="nextReminder">暂无</strong>
+                </article>
+              </div>
+            </section>
+
+            <section class="last-reminder-panel" hidden id="lastReminderCard">
+              <strong id="lastReminderTitle">最近提醒</strong>
+              <p id="lastReminderText">暂无提醒触发</p>
+            </section>
+
+            <section class="todo-list-panel">
+              <div class="todo-list-head">
+                <div>
+                  <h2>待办列表</h2>
+                  <p>新增在左，处理在右，交互保持尽量直接。</p>
+                </div>
+              </div>
+
+              <section class="todo-list" id="todoList"></section>
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal" id="reminderModal" aria-hidden="true">
+      <div class="modal-card">
+        <h2 id="reminderModalTitle">待办提醒</h2>
+        <p id="reminderModalText">你的事项已经到提醒时间。</p>
+        <button class="button button-primary" id="reminderModalButton" type="button">知道了</button>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

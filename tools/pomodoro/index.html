@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>番茄时钟 | 专注工作</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.5s ease;
+      }
+
+      body.work-mode {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      body.break-mode {
+        background: linear-gradient(135deg, #a5d6a7 0%, #81c784 100%);
+      }
+
+      body.longBreak-mode {
+        background: linear-gradient(135deg, #90caf9 0%, #64b5f6 100%);
+      }
+
+      .container {
+        text-align: center;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 90%;
+      }
+
+      .mode-label {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      .work-mode .mode-label {
+        color: #764ba2;
+      }
+
+      .break-mode .mode-label {
+        color: #66bb6a;
+      }
+
+      .longBreak-mode .mode-label {
+        color: #42a5f5;
+      }
+
+      .timer {
+        font-size: 6rem;
+        font-weight: 300;
+        color: #333;
+        margin: 20px 0;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -2px;
+      }
+
+      .timer.running {
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(1.02);
+        }
+      }
+
+      .pomodoro-count {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 20px 0;
+      }
+
+      .pomodoro-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        transition: all 0.3s ease;
+      }
+
+      .pomodoro-dot.completed {
+        background: #764ba2;
+        box-shadow: 0 0 10px rgba(118, 75, 162, 0.4);
+      }
+
+      .break-mode .pomodoro-dot.completed {
+        background: #66bb6a;
+        box-shadow: 0 0 10px rgba(102, 187, 106, 0.4);
+      }
+
+      .longBreak-mode .pomodoro-dot.completed {
+        background: #42a5f5;
+        box-shadow: 0 0 10px rgba(66, 165, 245, 0.4);
+      }
+
+      .buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin: 30px 0 20px;
+      }
+
+      button {
+        border: none;
+        padding: 14px 28px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-width: 120px;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #666;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .mode-selector {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 25px;
+        padding-top: 25px;
+        border-top: 1px solid #eee;
+      }
+
+      .mode-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        border-radius: 20px;
+        background: #f5f5f5;
+        color: #666;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .mode-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .mode-btn.active {
+        border-color: currentColor;
+      }
+
+      .mode-btn.work {
+        color: #764ba2;
+      }
+
+      .mode-btn.work.active {
+        background: rgba(118, 75, 162, 0.1);
+      }
+
+      .mode-btn.break {
+        color: #66bb6a;
+      }
+
+      .mode-btn.break.active {
+        background: rgba(102, 187, 106, 0.1);
+      }
+
+      .mode-btn.longBreak {
+        color: #42a5f5;
+      }
+
+      .mode-btn.longBreak.active {
+        background: rgba(66, 165, 245, 0.1);
+      }
+
+      .settings {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+      }
+
+      .settings-toggle {
+        background: none;
+        border: none;
+        color: #999;
+        font-size: 0.85rem;
+        cursor: pointer;
+        padding: 5px 10px;
+      }
+
+      .settings-toggle:hover {
+        color: #666;
+      }
+
+      .settings-panel {
+        margin-top: 15px;
+        display: none;
+      }
+
+      .settings-panel.show {
+        display: block;
+      }
+
+      .setting-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 10px 0;
+        font-size: 0.9rem;
+        color: #666;
+      }
+
+      .setting-row input {
+        width: 60px;
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 0.9rem;
+      }
+
+      .notification-hint {
+        margin-top: 15px;
+        padding: 10px;
+        background: #fff3cd;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        color: #856404;
+        display: none;
+      }
+
+      .alert-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+
+      .alert-box {
+        background: white;
+        padding: 40px 50px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: bounceIn 0.5s ease;
+      }
+
+      @keyframes bounceIn {
+        0% {
+          transform: scale(0.5);
+          opacity: 0;
+        }
+
+        70% {
+          transform: scale(1.05);
+        }
+
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .alert-box h2 {
+        font-size: 2rem;
+        margin-bottom: 15px;
+      }
+
+      .alert-box p {
+        color: #666;
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+      }
+
+      .alert-box button {
+        padding: 12px 40px;
+        font-size: 1rem;
+      }
+
+      .stats {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        font-size: 0.85rem;
+        color: #888;
+      }
+
+      .stats span {
+        font-weight: 600;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body class="work-mode">
+    <div class="container">
+      <div class="mode-label" id="modeLabel">专注时间</div>
+
+      <div class="timer" id="timer">25:00</div>
+
+      <div class="pomodoro-count" id="pomodoroCount">
+        <div class="pomodoro-dot"></div>
+        <div class="pomodoro-dot"></div>
+        <div class="pomodoro-dot"></div>
+        <div class="pomodoro-dot"></div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn-primary" id="startBtn" onclick="toggleTimer()">开始</button>
+        <button class="btn-secondary" onclick="resetTimer()">重置</button>
+      </div>
+
+      <div class="mode-selector">
+        <button class="mode-btn work active" onclick="setMode('work')">专注</button>
+        <button class="mode-btn break" onclick="setMode('break')">短休息</button>
+        <button class="mode-btn longBreak" onclick="setMode('longBreak')">长休息</button>
+      </div>
+
+      <div class="settings">
+        <button class="settings-toggle" onclick="toggleSettings()">⚙️ 设置</button>
+        <div class="settings-panel" id="settingsPanel">
+          <div class="setting-row">
+            <label>专注时长（分钟）</label>
+            <input
+              type="number"
+              id="workTime"
+              value="25"
+              min="0.1"
+              max="120"
+              step="0.1"
+              onchange="updateSettings()"
+            />
+          </div>
+          <div class="setting-row">
+            <label>短休息时长（分钟）</label>
+            <input
+              type="number"
+              id="breakTime"
+              value="5"
+              min="0.1"
+              max="30"
+              step="0.1"
+              onchange="updateSettings()"
+            />
+          </div>
+          <div class="setting-row">
+            <label>长休息时长（分钟）</label>
+            <input
+              type="number"
+              id="longBreakTime"
+              value="15"
+              min="0.1"
+              max="60"
+              step="0.1"
+              onchange="updateSettings()"
+            />
+          </div>
+          <div class="setting-row">
+            <label>长休息间隔（个番茄）</label>
+            <input
+              type="number"
+              id="longBreakInterval"
+              value="4"
+              min="2"
+              max="10"
+              onchange="updateSettings()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-hint" id="notificationHint">
+        🔔 请点击页面任意位置以启用通知提醒
+      </div>
+
+      <div class="stats">
+        今日完成 <span id="todayCount">0</span> 个番茄
+      </div>
+    </div>
+
+    <div class="alert-overlay" id="alertOverlay">
+      <div class="alert-box">
+        <h2 id="alertTitle">⏰ 时间到！</h2>
+        <p id="alertMessage">休息一下吧</p>
+        <button class="btn-primary" onclick="closeAlert()">知道了</button>
+      </div>
+    </div>
+
+    <script>
+      let settings = {
+        work: 25,
+        break: 5,
+        longBreak: 15,
+        longBreakInterval: 4
+      };
+
+      let currentMode = "work";
+      let timeLeft = settings.work * 60;
+      let isRunning = false;
+      let timer = null;
+      let completedPomodoros = 0;
+      let todayCount = parseInt(localStorage.getItem("pomodoroToday") || "0", 10);
+      let lastDate = localStorage.getItem("pomodoroDate") || new Date().toDateString();
+
+      if (lastDate !== new Date().toDateString()) {
+        todayCount = 0;
+        localStorage.setItem("pomodoroToday", "0");
+        localStorage.setItem("pomodoroDate", new Date().toDateString());
+      }
+
+      const timerEl = document.getElementById("timer");
+      const startBtn = document.getElementById("startBtn");
+      const modeLabel = document.getElementById("modeLabel");
+      const pomodoroCountEl = document.getElementById("pomodoroCount");
+      const todayCountEl = document.getElementById("todayCount");
+      const notificationHint = document.getElementById("notificationHint");
+
+      todayCountEl.textContent = todayCount;
+      updatePomodoroDots();
+      checkNotificationPermission();
+
+      function checkNotificationPermission() {
+        if ("Notification" in window) {
+          if (Notification.permission === "default") {
+            notificationHint.style.display = "block";
+            notificationHint.innerHTML = "🔔 请点击页面任意位置以启用通知提醒";
+            document.body.addEventListener("click", requestNotification, { once: true });
+          } else if (Notification.permission === "denied") {
+            notificationHint.style.display = "block";
+            notificationHint.innerHTML = "⚠️ 通知权限被拒绝，请在浏览器设置中允许通知";
+          }
+        } else {
+          notificationHint.style.display = "block";
+          notificationHint.innerHTML = "⚠️ 您的浏览器不支持通知功能";
+        }
+      }
+
+      function requestNotification() {
+        Notification.requestPermission().then((permission) => {
+          notificationHint.style.display = "none";
+          console.log("通知权限:", permission);
+        });
+      }
+
+      function sendNotification(title, body) {
+        console.log("尝试发送通知:", title, body);
+        console.log("Notification.permission:", Notification.permission);
+
+        if ("Notification" in window) {
+          if (Notification.permission === "granted") {
+            try {
+              const notification = new Notification(title, {
+                body: body,
+                requireInteraction: true,
+                tag: "pomodoro",
+                silent: false
+              });
+
+              notification.onclick = () => {
+                window.focus();
+                notification.close();
+              };
+
+              notification.onerror = (error) => {
+                console.error("通知错误:", error);
+              };
+
+              console.log("通知已发送");
+              return notification;
+            } catch (error) {
+              console.error("创建通知失败:", error);
+            }
+          } else {
+            console.warn("通知权限未授予，当前状态:", Notification.permission);
+            if (Notification.permission === "default") {
+              Notification.requestPermission();
+            }
+          }
+        }
+
+        playSound();
+      }
+
+      function showAlert(title, message) {
+        document.getElementById("alertTitle").textContent = title;
+        document.getElementById("alertMessage").textContent = message;
+        document.getElementById("alertOverlay").style.display = "flex";
+        playSound();
+      }
+
+      function closeAlert() {
+        document.getElementById("alertOverlay").style.display = "none";
+      }
+
+      function playSound() {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = "sine";
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+
+        setTimeout(() => {
+          const osc2 = audioContext.createOscillator();
+          const gain2 = audioContext.createGain();
+          osc2.connect(gain2);
+          gain2.connect(audioContext.destination);
+          osc2.frequency.value = 1000;
+          osc2.type = "sine";
+          gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          osc2.start(audioContext.currentTime);
+          osc2.stop(audioContext.currentTime + 0.5);
+        }, 200);
+      }
+
+      function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+      }
+
+      function updateDisplay() {
+        timerEl.textContent = formatTime(timeLeft);
+        document.title = `${formatTime(timeLeft)} | 番茄时钟`;
+      }
+
+      function toggleTimer() {
+        if (isRunning) {
+          pauseTimer();
+        } else {
+          startTimer();
+        }
+      }
+
+      function startTimer() {
+        isRunning = true;
+        startBtn.textContent = "暂停";
+        timerEl.classList.add("running");
+
+        document.querySelectorAll(".mode-btn").forEach((btn) => {
+          btn.classList.add("disabled");
+        });
+
+        timer = setInterval(() => {
+          timeLeft--;
+          updateDisplay();
+
+          if (timeLeft <= 0) {
+            completeTimer();
+          }
+        }, 1000);
+      }
+
+      function pauseTimer() {
+        isRunning = false;
+        startBtn.textContent = "继续";
+        timerEl.classList.remove("running");
+        clearInterval(timer);
+
+        document.querySelectorAll(".mode-btn").forEach((btn) => {
+          btn.classList.remove("disabled");
+        });
+      }
+
+      function resetTimer() {
+        pauseTimer();
+        startBtn.textContent = "开始";
+        timeLeft = Math.round(settings[currentMode] * 60);
+        updateDisplay();
+      }
+
+      function completeTimer() {
+        pauseTimer();
+        startBtn.textContent = "开始";
+
+        if (currentMode === "work") {
+          completedPomodoros++;
+          todayCount++;
+          localStorage.setItem("pomodoroToday", todayCount.toString());
+          todayCountEl.textContent = todayCount;
+          updatePomodoroDots();
+
+          const title = "🎉 专注完成！";
+          const message = `太棒了！你完成了第 ${completedPomodoros} 个番茄时钟`;
+          sendNotification(title, message);
+          showAlert(title, message);
+
+          if (completedPomodoros % settings.longBreakInterval === 0) {
+            setMode("longBreak");
+          } else {
+            setMode("break");
+          }
+        } else {
+          const breakType = currentMode === "longBreak" ? "长休息" : "休息";
+          const title = "☕ 休息结束！";
+          const message = `${breakType}时间到，准备好继续专注了吗？`;
+          sendNotification(title, message);
+          showAlert(title, message);
+          setMode("work");
+        }
+      }
+
+      function updatePomodoroDots() {
+        const dots = pomodoroCountEl.querySelectorAll(".pomodoro-dot");
+        const displayCount = settings.longBreakInterval;
+
+        if (dots.length !== displayCount) {
+          pomodoroCountEl.innerHTML = "";
+          for (let index = 0; index < displayCount; index++) {
+            const dot = document.createElement("div");
+            dot.className = "pomodoro-dot";
+            pomodoroCountEl.appendChild(dot);
+          }
+        }
+
+        const allDots = pomodoroCountEl.querySelectorAll(".pomodoro-dot");
+        allDots.forEach((dot, index) => {
+          const cyclePosition = completedPomodoros % settings.longBreakInterval;
+          if (
+            index < cyclePosition ||
+            (cyclePosition === 0 && completedPomodoros >= settings.longBreakInterval)
+          ) {
+            dot.classList.add("completed");
+          } else {
+            dot.classList.remove("completed");
+          }
+        });
+      }
+
+      function setMode(mode) {
+        if (isRunning) {
+          alert("请先暂停当前计时再切换模式");
+          return;
+        }
+
+        currentMode = mode;
+        timeLeft = Math.round(settings[mode] * 60);
+
+        document.body.className = `${mode}-mode`;
+
+        const modeLabels = {
+          work: "专注时间",
+          break: "短休息",
+          longBreak: "长休息"
+        };
+        modeLabel.textContent = modeLabels[mode];
+
+        document.querySelectorAll(".mode-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        document
+          .querySelector(`.mode-btn.${mode === "longBreak" ? "longBreak" : mode}`)
+          .classList.add("active");
+
+        updateDisplay();
+        pauseTimer();
+        startBtn.textContent = "开始";
+      }
+
+      function toggleSettings() {
+        document.getElementById("settingsPanel").classList.toggle("show");
+      }
+
+      function updateSettings() {
+        settings.work = parseFloat(document.getElementById("workTime").value) || 25;
+        settings.break = parseFloat(document.getElementById("breakTime").value) || 5;
+        settings.longBreak = parseFloat(document.getElementById("longBreakTime").value) || 15;
+        settings.longBreakInterval =
+          parseInt(document.getElementById("longBreakInterval").value, 10) || 4;
+
+        if (!isRunning) {
+          timeLeft = Math.round(settings[currentMode] * 60);
+          updateDisplay();
+        }
+
+        updatePomodoroDots();
+      }
+
+      updateDisplay();
+    </script>
+  </body>
+</html>

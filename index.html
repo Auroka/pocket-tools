@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pocket Tools</title>
+    <meta name="theme-color" content="#f6f7fb" />
+    <link rel="stylesheet" href="src/styles/tokens.css" />
+    <link rel="stylesheet" href="src/styles/base.css" />
+    <link rel="stylesheet" href="src/styles/components.css" />
+    <style>
+      .home-page {
+        width: min(100%, 42rem);
+      }
+
+      .home-title {
+        font-size: clamp(2.25rem, 6vw, 4rem);
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -0.06em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="screen home-page">
+        <header class="page-header">
+          <h1 class="home-title">Pocket Tools</h1>
+        </header>
+
+        <section class="tool-grid" id="toolList" aria-label="工具列表"></section>
+      </main>
+    </div>
+
+    <script src="src/data/tools.js"></script>
+    <script>
+      (function () {
+        const tools = window.PocketTools?.tools || [];
+        const toolList = document.getElementById("toolList");
+
+        toolList.innerHTML = tools
+          .map(function (tool) {
+            const statusClass = tool.status === "ready" ? "is-ready" : "is-planned";
+
+            return `
+              <a class="card tool-card" href="${tool.path}">
+                <span class="tool-icon">
+                  <img src="${tool.icon}" alt="${tool.name}" />
+                </span>
+                <span>
+                  <h2>${tool.name}</h2>
+                  <p>${tool.description}</p>
+                </span>
+                <span class="status-pill ${statusClass}">${tool.statusLabel}</span>
+              </a>
+            `;
+          })
+          .join("");
+      })();
+    </script>
+  </body>
+</html>

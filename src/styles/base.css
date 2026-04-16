@@ -1,0 +1,143 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at 18% 8%, rgba(79, 107, 255, 0.16), transparent 32rem),
+    radial-gradient(circle at 88% 12%, rgba(139, 92, 246, 0.12), transparent 28rem),
+    linear-gradient(180deg, var(--color-bg) 0%, #ffffff 100%);
+  font-family: var(--font-family);
+  line-height: var(--line-body);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(rgba(18, 24, 38, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 24, 38, 0.04) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 78%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+p,
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+
+.app-shell {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-5) var(--space-4) var(--space-8);
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, var(--content-width));
+  gap: var(--space-4);
+}
+
+.page-header {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-1);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.eyebrow {
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-title {
+  max-width: 16rem;
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  line-height: var(--line-title);
+  letter-spacing: -0.04em;
+}
+
+.page-subtitle {
+  max-width: 22rem;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: var(--space-2) var(--space-1) 0;
+  color: var(--color-text-soft);
+  font-size: var(--text-sm);
+  font-weight: 800;
+}
+
+.mono-number {
+  font-family: var(--font-family);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 48rem) {
+  .app-shell {
+    padding-top: var(--space-8);
+  }
+}

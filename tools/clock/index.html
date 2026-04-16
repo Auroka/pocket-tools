@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>时间管理大师</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        background-color: #000;
+      }
+
+      #day {
+        font-size: 10vh;
+        font-weight: bold;
+      }
+
+      #time {
+        font-size: 40vh;
+        font-weight: bold;
+      }
+
+      #clock {
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+
+      @media screen and (max-width: 1080px) {
+        #day {
+          font-size: 8vh;
+        }
+
+        #time {
+          font-size: 28vh;
+        }
+      }
+
+      @media screen and (max-width: 768px) {
+        #day {
+          font-size: 5vh;
+        }
+
+        #time {
+          font-size: 18vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="day"></div>
+    <div id="time"></div>
+    <canvas id="clock" width="200px" height="200px"></canvas>
+    <script src="./clock.js"></script>
+    <script>
+      const week = ["日", "一", "二", "三", "四", "五", "六"];
+      const domDay = document.getElementById("day");
+      const domTime = document.getElementById("time");
+
+      renderDate();
+
+      setInterval(function () {
+        renderDate();
+      }, 1000);
+
+      function renderDate() {
+        const date = new Date();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const weekDay = week[date.getDay()];
+        const hour = date.getHours();
+        const minute = date.getMinutes();
+
+        domDay.innerHTML = month + "月" + day + "日" + " 星期" + weekDay;
+        domTime.innerHTML = fixNum(hour) + ":" + fixNum(minute);
+      }
+
+      function fixNum(num) {
+        return num.toString().length === 2 ? num : "0" + num;
+      }
+    </script>
+  </body>
+</html>
