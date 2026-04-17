@@ -1,0 +1,7 @@
+interface:
+  display_name: "Pocket UI"
+  short_description: "Simple, restrained frontend design for Pocket Tools"
+  default_prompt: "Use $pocket-ui to design or refine a Pocket Tools page with a simple, restrained desktop-first aesthetic."
+
+policy:
+  allow_implicit_invocation: true
