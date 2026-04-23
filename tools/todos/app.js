@@ -3,7 +3,8 @@
   const REMINDER_POLL_MS = 15000;
   const state = {
     todos: [],
-    lastReminder: null
+    lastReminder: null,
+    todoFilter: "pending"
   };
 
   const todoForm = document.getElementById("todoForm");
@@ -23,6 +24,7 @@
   const reminderCount = document.getElementById("reminderCount");
   const nextReminder = document.getElementById("nextReminder");
   const todoCounter = document.getElementById("todoCounter");
+  const todoFilterButtons = Array.from(document.querySelectorAll("[data-todo-filter]"));
   const lastReminderCard = document.getElementById("lastReminderCard");
   const lastReminderTitle = document.getElementById("lastReminderTitle");
   const lastReminderText = document.getElementById("lastReminderText");
@@ -47,6 +49,9 @@
     reminderType.addEventListener("change", handleReminderTypeChange);
     permissionButton.addEventListener("click", requestNotificationPermission);
     todoList.addEventListener("click", handleTodoListClick);
+    todoFilterButtons.forEach(function (button) {
+      button.addEventListener("click", handleTodoFilterClick);
+    });
     reminderModalButton.addEventListener("click", closeReminderModal);
 
     document.addEventListener("visibilitychange", function () {
@@ -213,6 +218,17 @@
     }
   }
 
+  function handleTodoFilterClick(event) {
+    const nextFilter = event.currentTarget.dataset.todoFilter;
+
+    if (nextFilter !== "pending" && nextFilter !== "completed") {
+      return;
+    }
+
+    state.todoFilter = nextFilter;
+    render();
+  }
+
   function toggleTodo(todoId) {
     state.todos = state.todos.map(function (todo) {
       if (todo.id !== todoId) {
@@ -265,6 +281,17 @@
     nextReminder.textContent = nextReminderTodo
       ? formatReminderMoment(getNextReminderAt(nextReminderTodo))
       : "暂无";
+
+    renderTodoFilterState();
+  }
+
+  function renderTodoFilterState() {
+    todoFilterButtons.forEach(function (button) {
+      const isActive = button.dataset.todoFilter === state.todoFilter;
+
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
   }
 
   function renderLastReminder() {
@@ -291,7 +318,14 @@
       return;
     }
 
-    const sortedTodos = state.todos.slice().sort(compareTodos);
+    const visibleTodos = getVisibleTodos();
+
+    if (!visibleTodos.length) {
+      todoList.innerHTML = getFilteredEmptyState();
+      return;
+    }
+
+    const sortedTodos = visibleTodos.slice().sort(compareTodos);
 
     todoList.innerHTML = sortedTodos
       .map(function (todo) {
@@ -299,8 +333,8 @@
         const reminderNote = getReminderNote(todo);
         const titleClass = todo.completed ? "todo-title is-completed" : "todo-title";
         const toggleClass = todo.completed ? "todo-toggle is-completed" : "todo-toggle";
-        const toggleText = todo.completed ? "已完成" : "完成";
-        const toggleIcon = todo.completed ? "✓" : "○";
+        const toggleText = todo.completed ? "恢复" : "完成";
+        const toggleIcon = todo.completed ? "↩" : "○";
 
         return [
           '<article class="todo-item card">',
@@ -333,7 +367,38 @@
       return leftTodo.completed ? 1 : -1;
     }
 
+    if (leftTodo.completed && rightTodo.completed) {
+      return (
+        (rightTodo.completedAt || rightTodo.createdAt) -
+        (leftTodo.completedAt || leftTodo.createdAt)
+      );
+    }
+
     return rightTodo.createdAt - leftTodo.createdAt;
+  }
+
+  function getVisibleTodos() {
+    return state.todos.filter(function (todo) {
+      return state.todoFilter === "completed" ? todo.completed : !todo.completed;
+    });
+  }
+
+  function getFilteredEmptyState() {
+    if (state.todoFilter === "completed") {
+      return [
+        '<section class="card empty-state">',
+        "  <strong>暂无已完成待办</strong>",
+        '  <p class="muted">完成事项后会收纳到这里，主列表保持清爽。</p>',
+        "</section>"
+      ].join("");
+    }
+
+    return [
+      '<section class="card empty-state">',
+      "  <strong>暂无未完成待办</strong>",
+      '  <p class="muted">新建待办会先出现在这里，完成后自动移到已完成。</p>',
+      "</section>"
+    ].join("");
   }
 
   function getReminderChipText(todo) {
