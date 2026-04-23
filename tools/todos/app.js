@@ -459,7 +459,7 @@
       if (todo.reminder.type === "fixed") {
         if (!todo.reminder.fixedTriggered && now >= todo.reminder.fixedAt) {
           hasChange = true;
-          triggerReminder(todo);
+          triggerReminder(todo, now);
 
           return {
             ...todo,
@@ -478,7 +478,7 @@
 
       if (now >= nextReminderAt) {
         hasChange = true;
-        triggerReminder(todo);
+        triggerReminder(todo, now);
 
         return {
           ...todo,
@@ -498,7 +498,7 @@
     }
   }
 
-  function triggerReminder(todo) {
+  function triggerReminder(todo, triggeredAt) {
     const message =
       todo.reminder.type === "interval"
         ? `事项“${todo.title}”到了间隔提醒时间。`
@@ -506,30 +506,35 @@
 
     state.lastReminder = {
       message: message,
-      at: Date.now()
+      at: triggeredAt
     };
 
-    // 系统通知失败时，退化为页面内弹层提醒，避免提醒完全丢失。
-    sendBrowserNotification("待办提醒", message);
+    sendBrowserNotification("待办提醒", message, todo, triggeredAt);
     openReminderModal("待办提醒", message);
     playReminderTone();
   }
 
-  function sendBrowserNotification(title, body) {
+  function sendBrowserNotification(title, body, todo, triggeredAt) {
     if (getNotificationPermission() !== "granted") {
       return;
     }
 
-    const notification = new Notification(title, {
-      body: body,
-      tag: "pocket-tools-todos",
-      requireInteraction: true
-    });
+    try {
+      const notification = new Notification(title, {
+        body: body,
+        // 每次触发使用独立 tag，避免浏览器把间隔提醒折叠成上一条通知。
+        tag: `pocket-tools-todos-${todo.id}-${triggeredAt}`,
+        requireInteraction: true
+      });
 
-    notification.onclick = function () {
-      window.focus();
-      notification.close();
-    };
+      notification.onclick = function () {
+        window.focus();
+        notification.close();
+      };
+    } catch (error) {
+      // 系统通知失败时，保留页面内弹层和声音提醒，避免提醒完全丢失。
+      console.warn("发送待办浏览器通知失败:", error);
+    }
   }
 
   function openReminderModal(title, message) {
