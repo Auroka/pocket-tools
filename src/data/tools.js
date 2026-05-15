@@ -27,6 +27,15 @@
       icon: "assets/icons/todo.svg",
       status: "ready",
       statusLabel: "可使用"
+    },
+    {
+      id: "market-entry",
+      name: "NDX 买点回测",
+      description: "在纳斯达克 100 月度曲线上选择买点和统计点。",
+      path: "tools/market-entry/index.html",
+      icon: "assets/icons/market.svg",
+      status: "ready",
+      statusLabel: "可使用"
     }
   ];
 })();

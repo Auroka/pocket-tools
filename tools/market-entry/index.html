@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NDX 买点回测</title>
+    <meta name="theme-color" content="#f6f7fb" />
+    <link rel="stylesheet" href="../../src/styles/tokens.css" />
+    <link rel="stylesheet" href="../../src/styles/base.css" />
+    <link rel="stylesheet" href="../../src/styles/components.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="screen market-page">
+        <header class="page-header market-intro">
+          <div class="eyebrow">Nasdaq Backtest</div>
+          <div class="header-row">
+            <div>
+              <h1 class="page-title">NDX 买点回测</h1>
+            </div>
+            <a class="page-link" href="../../index.html">返回首页</a>
+          </div>
+          <p class="page-subtitle">
+            在纳斯达克 100 月度曲线上选择买入点和统计点，输入买入金额后立即看到当前收益。
+          </p>
+        </header>
+
+        <section class="market-workspace">
+          <section class="market-panel chart-panel">
+            <div class="chart-toolbar">
+              <div class="field amount-field">
+                <label for="investmentAmount">买入金额</label>
+                <input
+                  class="input mono-number"
+                  id="investmentAmount"
+                  inputmode="decimal"
+                  min="1"
+                  step="100"
+                  type="number"
+                />
+              </div>
+
+              <div class="segmented point-mode" role="group" aria-label="曲线选择模式">
+                <button
+                  class="segmented-button is-active"
+                  data-active-point="entry"
+                  type="button"
+                  aria-pressed="true"
+                >
+                  设置买入点
+                </button>
+                <button
+                  class="segmented-button"
+                  data-active-point="exit"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  设置统计点
+                </button>
+              </div>
+            </div>
+
+            <section class="pyramid-panel">
+              <div class="pyramid-head">
+                <div>
+                  <span class="status-pill">倒金字塔加仓</span>
+                  <p>按相对历史最高点回撤触发，现金池平分为 10 份。</p>
+                </div>
+                <label class="switch-control" for="pyramidToggle">
+                  <input id="pyramidToggle" type="checkbox" />
+                  <span></span>
+                </label>
+              </div>
+
+              <div class="pyramid-fields" id="pyramidFields">
+                <div class="field amount-field">
+                  <label for="cashPoolAmount">现金池金额</label>
+                  <input
+                    class="input mono-number"
+                    id="cashPoolAmount"
+                    inputmode="decimal"
+                    min="1"
+                    step="100"
+                    type="number"
+                  />
+                </div>
+
+                <div class="pyramid-rules" aria-label="加仓规则">
+                  <span>10% · 1份</span>
+                  <span>15% · 2份</span>
+                  <span>20% · 2份</span>
+                  <span>30% · 3份</span>
+                  <span>40% · 2份</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="chart-stage">
+              <svg
+                class="market-chart"
+                id="marketChart"
+                viewBox="0 0 1000 440"
+                role="img"
+                aria-labelledby="chartTitle chartDesc"
+              >
+                <title id="chartTitle">纳斯达克 100 指数月度走势</title>
+                <desc id="chartDesc">从 1986 年 1 月到最新样本的 NDX 月末收盘点位。</desc>
+                <g id="gridLayer"></g>
+                <path class="selection-area" id="selectionArea" d=""></path>
+                <path class="selection-line" id="selectionLine" d=""></path>
+                <path class="price-line" id="priceLine" d=""></path>
+                <g class="axis-labels" id="axisLabels"></g>
+                <g class="pyramid-markers" id="pyramidMarkers"></g>
+                <rect class="chart-hit-layer" id="chartHitLayer" x="0" y="0" width="1000" height="440" />
+                <line class="marker-line entry-marker-line" id="entryMarkerLine" />
+                <line class="marker-line exit-marker-line" id="exitMarkerLine" />
+                <circle class="point-marker entry-marker" id="entryMarker" r="7" data-handle="entry" />
+                <circle class="point-marker exit-marker" id="exitMarker" r="7" data-handle="exit" />
+              </svg>
+              <div class="chart-tip" id="chartTip" hidden>
+                <strong id="tipDate">--</strong>
+                <span id="tipClose">--</span>
+              </div>
+            </div>
+
+            <div class="range-controls">
+              <div class="range-field">
+                <label for="entryRange">买入点</label>
+                <input id="entryRange" type="range" min="0" value="0" />
+                <div class="point-readout">
+                  <strong id="entryDate">--</strong>
+                  <span class="mono-number" id="entryClose">--</span>
+                </div>
+              </div>
+
+              <div class="range-field">
+                <label for="exitRange">统计点</label>
+                <input id="exitRange" type="range" min="0" value="0" />
+                <div class="point-readout">
+                  <strong id="exitDate">--</strong>
+                  <span class="mono-number" id="exitClose">--</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="market-panel result-panel" aria-live="polite">
+            <div class="result-main" id="resultMain">
+              <span>收益金额</span>
+              <strong class="mono-number" id="profitAmount">¥0.00</strong>
+              <p id="resultSummary">请选择买入点和统计点。</p>
+            </div>
+
+            <div class="result-grid">
+              <article>
+                <span>策略总资产</span>
+                <strong class="mono-number" id="currentValue">¥0.00</strong>
+              </article>
+              <article>
+                <span>收益率</span>
+                <strong class="mono-number" id="returnRate">0.00%</strong>
+              </article>
+              <article>
+                <span>买入份额</span>
+                <strong class="mono-number" id="indexUnits">0.0000</strong>
+              </article>
+              <article>
+                <span>累计买入</span>
+                <strong class="mono-number" id="deployedAmount">¥0.00</strong>
+              </article>
+              <article>
+                <span>剩余现金</span>
+                <strong class="mono-number" id="remainingCash">¥0.00</strong>
+              </article>
+              <article>
+                <span>持有时间</span>
+                <strong id="holdingPeriod">0 个月</strong>
+              </article>
+              <article>
+                <span>区间最低点</span>
+                <strong id="lowestPoint">--</strong>
+              </article>
+              <article>
+                <span>最大回撤</span>
+                <strong class="mono-number" id="maxDrawdown">0.00%</strong>
+              </article>
+            </div>
+
+            <section class="pyramid-log" id="pyramidLog" hidden>
+              <div class="pyramid-log-head">
+                <span>加仓触发</span>
+                <strong id="pyramidStatus">未开启</strong>
+              </div>
+              <div class="pyramid-log-list" id="pyramidLogList"></div>
+            </section>
+
+            <p class="source-note">
+              月度样本取每月最后一个有效交易日收盘，历史数据源为 FRED NASDAQ100，最新样本为 Nasdaq 官方 NDX 2026-05-14。
+            </p>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
